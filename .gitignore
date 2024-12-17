@@ -1,1 +1,2 @@
-data/
+data/*.txt
+*__pycache__*
