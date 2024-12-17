@@ -170,6 +170,7 @@ def get_stock_price(symbol: str, ALPHAVANTAGE_API_KEY: str):
     return sp_df
 
 
+
 def plot_air_quality_forecast(city: str, street: str, df: pd.DataFrame, file_path: str, hindcast=False):
     fig, ax = plt.subplots(figsize=(10, 6))
 
