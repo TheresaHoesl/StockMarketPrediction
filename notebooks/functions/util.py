@@ -129,6 +129,8 @@ def get_city_coordinates(city_name: str):
 
     return latitude, longitude
 
+
+# we use that
 def trigger_request(url:str):
     response = requests.get(url)
     if response.status_code == 200:
@@ -141,45 +143,31 @@ def trigger_request(url:str):
     return data
 
 
-def get_pm25(aqicn_url: str, country: str, city: str, street: str, day: datetime.date, AQI_API_KEY: str):
+def get_stock_price(symbol: str, ALPHAVANTAGE_API_KEY: str):
     """
-    Returns DataFrame with air quality (pm25) as dataframe
+    Returns DataFrame with stock price as dataframe
     """
     # The API endpoint URL
-    url = f"{aqicn_url}/?token={AQI_API_KEY}"
+    url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={symbol}&apikey={ALPHAVANTAGE_API_KEY}"
 
     # Make a GET request to fetch the data from the API
     data = trigger_request(url)
 
-    # if we get 'Unknown station' response then retry with city in url
-    if data['data'] == "Unknown station":
-        url1 = f"https://api.waqi.info/feed/{country}/{street}/?token={AQI_API_KEY}"
-        data = trigger_request(url1)
+    # Extract the latest date
+    latest_date = data["Meta Data"]["3. Last Refreshed"]
 
-    if data['data'] == "Unknown station":
-        url2 = f"https://api.waqi.info/feed/{country}/{city}/{street}/?token={AQI_API_KEY}"
-        data = trigger_request(url2)
+    # Extract the "close" price for the latest date
+    latest_close_price = data["Time Series (Daily)"][latest_date]["4. close"]
 
+    sp_df = pd.DataFrame()
+    
+    sp_df['date'] = [latest_date]
+    sp_df['date'] = pd.to_datetime(sp_df['date'])
+    
+    sp_df['price'] = [latest_close_price]
+    sp_df['price'] = sp_df['price'].astype('float32')
 
-    # Check if the API response contains the data
-    if data['status'] == 'ok':
-        # Extract the air quality data
-        aqi_data = data['data']
-        aq_today_df = pd.DataFrame()
-        aq_today_df['pm25'] = [aqi_data['iaqi'].get('pm25', {}).get('v', None)]
-        aq_today_df['pm25'] = aq_today_df['pm25'].astype('float32')
-
-        aq_today_df['country'] = country
-        aq_today_df['city'] = city
-        aq_today_df['street'] = street
-        aq_today_df['date'] = day
-        aq_today_df['date'] = pd.to_datetime(aq_today_df['date'])
-        aq_today_df['url'] = aqicn_url
-    else:
-        print("Error: There may be an incorrect  URL for your Sensor or it is not contactable right now. The API response does not contain data.  Error message:", data['data'])
-        raise requests.exceptions.RequestException(data['data'])
-
-    return aq_today_df
+    return sp_df
 
 
 def plot_air_quality_forecast(city: str, street: str, df: pd.DataFrame, file_path: str, hindcast=False):
@@ -287,7 +275,7 @@ def secrets_api(proj):
     conn = hopsworks.connection(host=host, project=proj, api_key_value=api_key)
     return conn.get_secrets_api()
 
-
+# we use this
 def check_file_path(file_path):
     my_file = Path(file_path)
     if my_file.is_file() == False:
