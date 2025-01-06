@@ -1,1 +1,1 @@
-{"spotify": {"min_sp": 71.05, "max_sp": 502.38, "min_snp": 224.65, "max_snp": 224.65}, "google": {"min_sp": 86.02, "max_sp": 2996.77, "min_snp": 68.19, "max_snp": 610.83}, "bitcoin": {"min_sp": 39524.27, "max_sp": 106220.6, "min_snp": 469.56, "max_snp": 610.83}}
+{"spotify": {"min_sp": 71.05, "max_sp": 502.38, "min_snp": 231.16, "max_snp": 610.83}, "google": {"min_sp": 83.43, "max_sp": 2996.77, "min_snp": 68.19, "max_snp": 610.7}, "bitcoin": {"min_sp": 39524.27, "max_sp": 106220.6, "min_snp": 469.56, "max_snp": 610.7}}
