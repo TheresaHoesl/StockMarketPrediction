@@ -13,119 +13,6 @@ import hopsworks
 import hsfs
 from pathlib import Path
 
-def get_historical_weather(city, start_date,  end_date, latitude, longitude):
-    # latitude, longitude = get_city_coordinates(city)
-
-    # Setup the Open-Meteo API client with cache and retry on error
-    cache_session = requests_cache.CachedSession('.cache', expire_after = -1)
-    retry_session = retry(cache_session, retries = 5, backoff_factor = 0.2)
-    openmeteo = openmeteo_requests.Client(session = retry_session)
-
-    # Make sure all required weather variables are listed here
-    # The order of variables in hourly or daily is important to assign them correctly below
-    url = "https://archive-api.open-meteo.com/v1/archive"
-    params = {
-        "latitude": latitude,
-        "longitude": longitude,
-        "start_date": start_date,
-        "end_date": end_date,
-        "daily": ["temperature_2m_mean", "precipitation_sum", "wind_speed_10m_max", "wind_direction_10m_dominant"]
-    }
-    responses = openmeteo.weather_api(url, params=params)
-
-    # Process first location. Add a for-loop for multiple locations or weather models
-    response = responses[0]
-    print(f"Coordinates {response.Latitude()}°N {response.Longitude()}°E")
-    print(f"Elevation {response.Elevation()} m asl")
-    print(f"Timezone {response.Timezone()} {response.TimezoneAbbreviation()}")
-    print(f"Timezone difference to GMT+0 {response.UtcOffsetSeconds()} s")
-
-    # Process daily data. The order of variables needs to be the same as requested.
-    daily = response.Daily()
-    daily_temperature_2m_mean = daily.Variables(0).ValuesAsNumpy()
-    daily_precipitation_sum = daily.Variables(1).ValuesAsNumpy()
-    daily_wind_speed_10m_max = daily.Variables(2).ValuesAsNumpy()
-    daily_wind_direction_10m_dominant = daily.Variables(3).ValuesAsNumpy()
-
-    daily_data = {"date": pd.date_range(
-        start = pd.to_datetime(daily.Time(), unit = "s"),
-        end = pd.to_datetime(daily.TimeEnd(), unit = "s"),
-        freq = pd.Timedelta(seconds = daily.Interval()),
-        inclusive = "left"
-    )}
-    daily_data["temperature_2m_mean"] = daily_temperature_2m_mean
-    daily_data["precipitation_sum"] = daily_precipitation_sum
-    daily_data["wind_speed_10m_max"] = daily_wind_speed_10m_max
-    daily_data["wind_direction_10m_dominant"] = daily_wind_direction_10m_dominant
-
-    daily_dataframe = pd.DataFrame(data = daily_data)
-    daily_dataframe = daily_dataframe.dropna()
-    daily_dataframe['city'] = city
-    return daily_dataframe
-
-def get_hourly_weather_forecast(city, latitude, longitude):
-
-    # latitude, longitude = get_city_coordinates(city)
-
-    # Setup the Open-Meteo API client with cache and retry on error
-    cache_session = requests_cache.CachedSession('.cache', expire_after = 3600)
-    retry_session = retry(cache_session, retries = 5, backoff_factor = 0.2)
-    openmeteo = openmeteo_requests.Client(session = retry_session)
-
-    # Make sure all required weather variables are listed here
-    # The order of variables in hourly or daily is important to assign them correctly below
-    url = "https://api.open-meteo.com/v1/ecmwf"
-    params = {
-        "latitude": latitude,
-        "longitude": longitude,
-        "hourly": ["temperature_2m", "precipitation", "wind_speed_10m", "wind_direction_10m"]
-    }
-    responses = openmeteo.weather_api(url, params=params)
-
-    # Process first location. Add a for-loop for multiple locations or weather models
-    response = responses[0]
-    print(f"Coordinates {response.Latitude()}°N {response.Longitude()}°E")
-    print(f"Elevation {response.Elevation()} m asl")
-    print(f"Timezone {response.Timezone()} {response.TimezoneAbbreviation()}")
-    print(f"Timezone difference to GMT+0 {response.UtcOffsetSeconds()} s")
-
-    # Process hourly data. The order of variables needs to be the same as requested.
-
-    hourly = response.Hourly()
-    hourly_temperature_2m = hourly.Variables(0).ValuesAsNumpy()
-    hourly_precipitation = hourly.Variables(1).ValuesAsNumpy()
-    hourly_wind_speed_10m = hourly.Variables(2).ValuesAsNumpy()
-    hourly_wind_direction_10m = hourly.Variables(3).ValuesAsNumpy()
-
-    hourly_data = {"date": pd.date_range(
-        start = pd.to_datetime(hourly.Time(), unit = "s"),
-        end = pd.to_datetime(hourly.TimeEnd(), unit = "s"),
-        freq = pd.Timedelta(seconds = hourly.Interval()),
-        inclusive = "left"
-    )}
-    hourly_data["temperature_2m_mean"] = hourly_temperature_2m
-    hourly_data["precipitation_sum"] = hourly_precipitation
-    hourly_data["wind_speed_10m_max"] = hourly_wind_speed_10m
-    hourly_data["wind_direction_10m_dominant"] = hourly_wind_direction_10m
-
-    hourly_dataframe = pd.DataFrame(data = hourly_data)
-    hourly_dataframe = hourly_dataframe.dropna()
-    return hourly_dataframe
-
-
-
-def get_city_coordinates(city_name: str):
-    """
-    Takes city name and returns its latitude and longitude (rounded to 2 digits after dot).
-    """
-    # Initialize Nominatim API (for getting lat and long of the city)
-    geolocator = Nominatim(user_agent="MyApp")
-    city = geolocator.geocode(city_name)
-
-    latitude = round(city.latitude, 2)
-    longitude = round(city.longitude, 2)
-
-    return latitude, longitude
 
 
 # we use that
@@ -159,13 +46,71 @@ def get_stock_price(symbol: str, ALPHAVANTAGE_API_KEY: str):
 
     sp_df = pd.DataFrame()
     
-    sp_df['date'] = [latest_date]
-    sp_df['date'] = pd.to_datetime(sp_df['date'])
+    sp_df['timestamp'] = [latest_date]
+    sp_df['timestamp'] = pd.to_datetime(sp_df['timestamp'])
     
     sp_df['price'] = [latest_close_price]
-    sp_df['price'] = sp_df['price'].astype('float32')
+    sp_df['price'] = sp_df['price'].astype('double')
 
     return sp_df
+
+
+def get_crypto_price(symbol: str, ALPHAVANTAGE_API_KEY: str):
+    """
+    Returns DataFrame with stock price as dataframe
+    """
+    # The API endpoint URL
+    url = f"https://www.alphavantage.co/query?function=DIGITAL_CURRENCY_DAILY&symbol={symbol}&market=USD&apikey={ALPHAVANTAGE_API_KEY}"
+    # Make a GET request to fetch the data from the API
+    data = trigger_request(url)
+
+    # Extract the latest date
+    latest_date = data['Meta Data']['6. Last Refreshed']
+    latest_date_only = datetime.datetime.strptime(latest_date, '%Y-%m-%d %H:%M:%S').date()
+    latest_close_price = data['Time Series (Digital Currency Daily)'][str(latest_date_only)]['4. close']
+
+    sp_df = pd.DataFrame()
+    
+    sp_df['timestamp'] = pd.to_datetime([latest_date_only])
+    
+    sp_df['price'] = [latest_close_price]
+    sp_df['price'] = sp_df['price'].astype('double')
+
+    return sp_df
+
+def get_sentiment_score(symbol: str, ALPHAVANTAGE_API_KEY: str):
+    """
+    Returns DataFrame with sentiment score as dataframe
+    """
+    # The API endpoint URL
+    today = datetime.datetime.now()
+    yesterday = today - datetime.timedelta(days=1)
+    yesterday_formatted = yesterday.strftime('%Y%m%d') + 'T0000'
+    today_formatted = yesterday.strftime('%Y%m%d') + 'T2359'
+    
+    url = f"https://www.alphavantage.co/query?function=NEWS_SENTIMENT&limit=1000&time_from={yesterday_formatted}&time_to={today_formatted}&tickers={symbol}&apikey={ALPHAVANTAGE_API_KEY}"
+    
+    # Make a GET request to fetch the data from the API
+    response = requests.get(url)
+    sentim_data = response.json()
+    
+    sentim_df = pd.read_json(json.dumps(sentim_data))
+    
+    # Checks if new data available
+    if 'feed' in sentim_data and sentim_data['feed']:
+        sentim_df = pd.read_json(json.dumps(sentim_data))
+        sentim_df["timestamp"] = sentim_df["feed"].apply(lambda x: x.get("time_published"))
+        sentim_df["overall_sentiment_score"] = sentim_df["feed"].apply(lambda x: x.get("overall_sentiment_score"))
+        sentim_df.drop(columns=['feed','items','sentiment_score_definition','relevance_score_definition'], inplace=True)
+        sentim_df["timestamp"] = pd.to_datetime(sentim_df["timestamp"]).dt.date
+        sentim_df = sentim_df.groupby("timestamp").mean().reset_index()
+        return sentim_df
+    else:
+        # Return a score of 0 if no new data available
+        sentim_df = pd.DataFrame()
+        sentim_df['timestamp'] = [yesterday.date()]
+        sentim_df['overall_sentiment_score'] = [0]
+        return sentim_df
 
 
 
@@ -250,22 +195,6 @@ def delete_secrets(proj, name):
     except hopsworks.client.exceptions.RestAPIError:
         print(f"No {name} secret found")
 
-# WARNING - this will wipe out all your feature data and models
-def purge_project(proj):
-    fs = proj.get_feature_store()
-    mr = proj.get_model_registry()
-
-    # Delete Feature Views before deleting the feature groups
-    delete_feature_views(fs, "air_quality_fv")
-
-    # Delete ALL Feature Groups
-    delete_feature_groups(fs, "air_quality")
-    delete_feature_groups(fs, "weather")
-    delete_feature_groups(fs, "aq_predictions")
-
-    # Delete all Models
-    delete_models(mr, "air_quality_xgboost_model")
-    delete_secrets(proj, "SENSOR_LOCATION_JSON")
 
 
 def secrets_api(proj):
