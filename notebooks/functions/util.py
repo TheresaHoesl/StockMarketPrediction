@@ -124,15 +124,16 @@ def plot_stock_price_forecast(df: pd.DataFrame, file_path: str, name: str, hindc
     ax.set_title(f"Stock Price Prediction for {name}")
     ax.set_ylabel('Price')
 
-    colors = ['green', 'yellow', 'orange', 'red']
-    labels = ['Very Low', 'Low', 'Medium', 'High']
-    ranges = [(0, 50), (50, 100), (100, 150), (150, 200)]
-    for color, (start, end) in zip(colors, ranges):
-        ax.axhspan(start, end, color=color, alpha=0.3)
+    if hindcast:
+        colors = ['green', 'yellow', 'orange', 'red']
+        labels = ['Very Low', 'Low', 'Medium', 'High']
+        ranges = [(0, 50), (50, 100), (100, 150), (150, 200)]
+        for color, (start, end) in zip(colors, ranges):
+            ax.axhspan(start, end, color=color, alpha=0.3)
 
-    # Add a legend for the different Price Categories
-    patches = [Patch(color=colors[i], label=f"{labels[i]}: {ranges[i][0]}-{ranges[i][1]}") for i in range(len(colors))]
-    legend1 = ax.legend(handles=patches, loc='upper right', title="Price Categories", fontsize='x-small')
+        # Add a legend for the different Price Categories
+        patches = [Patch(color=colors[i], label=f"{labels[i]}: {ranges[i][0]}-{ranges[i][1]}") for i in range(len(colors))]
+        legend1 = ax.legend(handles=patches, loc='upper right', title="Price Categories", fontsize='x-small')
 
     # Aim for ~10 annotated values on x-axis, will work for both forecasts and hindcasts
     if len(df.index) > 11:
