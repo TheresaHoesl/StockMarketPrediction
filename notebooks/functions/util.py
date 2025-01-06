@@ -119,7 +119,7 @@ def plot_air_quality_forecast(city: str, street: str, df: pd.DataFrame, file_pat
 
     day = pd.to_datetime(df['date']).dt.date
     # Plot each column separately in matplotlib
-    ax.plot(day, df['predicted_pm25'], label='Predicted PM2.5', color='red', linewidth=2, marker='o', markersize=5, markerfacecolor='blue')
+    ax.plot(day, df['price'], label='Predicted PM2.5', color='red', linewidth=2, marker='o', markersize=5, markerfacecolor='blue')
 
     # Set the y-axis to a logarithmic scale
     ax.set_yscale('log')
