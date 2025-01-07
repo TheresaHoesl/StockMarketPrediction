@@ -1,6 +1,7 @@
-# Feature store and model registry
+# Feature store and model registry and related dependencies
 hopsworks[python]
 pyarrow
+great-expectations
 
 # Notebook Converter
 jupyter
