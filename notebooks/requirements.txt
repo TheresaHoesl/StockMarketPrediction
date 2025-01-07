@@ -1,7 +1,7 @@
 # Feature store and model registry and related dependencies
 hopsworks[python]
-pyarrow
-great-expectations
+pyarrow==16.1.0
+great-expectations==0.18.12
 
 # Notebook Converter
 jupyter
