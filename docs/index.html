@@ -31,9 +31,10 @@
         }
         .image-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
             gap: 20px;
             margin-top: 20px;
+            justify-content: center;
         }
         .image-section {
             background: white;
@@ -41,6 +42,8 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             padding: 20px;
             transition: transform 0.3s;
+            max-width: 400px;
+            margin: 0 auto;
         }
         .image-section:hover {
             transform: translateY(-10px);
