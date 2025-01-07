@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Display</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .image-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .image-section {
+            text-align: center;
+        }
+        .image-section img {
+            max-width: 80%;
+            height: auto;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Air Quality Images</h1>
+    <div class="image-container">
+        <div class="image-section">
+            <h2>Forecast of PM 2.5 Levels</h2>
+            <img src="/img/spot_forecast.png" alt="Spotify Stockprice Forecast">
+        </div>
+        <div class="image-section">
+            <h2>Hindcast of PM 2.5 Levels for One Day</h2>
+            <img src="/img/spot_hindcast.png" alt="Spotify Stockprice Hindcast">
+        </div>
+    </div>
+</body>
+</html>
