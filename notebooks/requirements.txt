@@ -1,5 +1,9 @@
 # Feature store and model registry
-hopsworks
+hopsworks[python]
+pyarrow
+
+# Notebook Converter
+jupyter
 
 # Be more efficient when making REST (Http) requests
 requests-cache==1.2.0
