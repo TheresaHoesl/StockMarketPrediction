@@ -23,11 +23,13 @@ jobs:
         with:
           python-version: '3.10'
           cache: 'pip'
+          
       - name: install python packages
+        working-directory: notebooks
         run: |
-          cd notebooks
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install jupyter
 
       - name: execute python workflows from bash script
         env:
