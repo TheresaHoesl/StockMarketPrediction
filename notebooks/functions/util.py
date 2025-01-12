@@ -110,6 +110,7 @@ def get_sentiment_score(symbol: str, ALPHAVANTAGE_API_KEY: str):
         sentim_df = pd.DataFrame()
         sentim_df['timestamp'] = [yesterday.date()]
         sentim_df['overall_sentiment_score'] = [0]
+        sentim_df['overall_sentiment_score'] = sentim_df['overall_sentiment_score'].astype(float)
         return sentim_df
 
 def plot_stock_price_forecast(df: pd.DataFrame, file_path: str, name: str, hindcast=False):
